@@ -4,7 +4,7 @@ import (
 	"flag"
 	"log"
 
-	"github.com/library-development/go-web"
+	"lib.dev/web"
 )
 
 func main() {
