@@ -8,14 +8,15 @@ import (
 	"lib.dev/web"
 )
 
+var apps = map[string]http.Handler{
+	"lib.dev": &libdev.App{},
+}
+
 func main() {
-	libdevApp := libdev.App{}
 	p := web.Platform{
 		LetsEncryptEmail: "merybka@gmail.com",
 		CertDir:          "/root/certs",
-		Apps: map[string]http.Handler{
-			"lib.dev": &libdevApp,
-		},
+		Apps:             apps,
 	}
 	err := p.Start()
 	if err != nil {
