@@ -1,20 +1,24 @@
 package main
 
 import (
-	"flag"
-	"log"
+	"fmt"
+	"net/http"
 
+	"lib.dev/libdev"
 	"lib.dev/web"
 )
 
 func main() {
-	flag.Parse()
-	platform := &web.Platform{
-		DataDir:          flag.Arg(0),
-		LetsEncryptEmail: flag.Arg(1),
+	libdevApp := libdev.App{}
+	p := web.Platform{
+		LetsEncryptEmail: "merybka@gmail.com",
+		CertDir:          "/root/certs",
+		Apps: map[string]http.Handler{
+			"lib.dev": &libdevApp,
+		},
 	}
-	err := platform.Start()
+	err := p.Start()
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
 	}
 }
