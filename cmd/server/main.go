@@ -4,12 +4,16 @@ import (
 	"fmt"
 	"net/http"
 
-	"lib.dev/libdev"
-	"lib.dev/web"
+	"github.com/library-development/go-web"
+	"github.com/mikerybka/go-libdev"
+	"github.com/mikerybka/go-mikerybkadev"
+	"github.com/mikerybka/go-schemacafe"
 )
 
 var apps = map[string]http.Handler{
-	"lib.dev": &libdev.App{},
+	"lib.dev":       &libdev.App{},
+	"mikerybka.dev": &mikerybkadev.App{},
+	"schema.cafe":   &schemacafe.App{},
 }
 
 func main() {
