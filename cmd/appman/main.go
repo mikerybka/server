@@ -6,6 +6,7 @@ import (
 	"flag"
 	"fmt"
 	"net/http"
+	"os"
 
 	"github.com/library-development/go-web"
 	"github.com/mikerybka/server/pkg/appman"
@@ -34,6 +35,7 @@ func main() {
 func addApp(appID string) (string, error) {
 	fmt.Println("Adding app:", appID)
 	path := web.ParsePath(appID)
+	json.NewEncoder(os.Stdout).Encode(path)
 	if !(path.First() == "github.com") {
 		return "", fmt.Errorf("appID must start with github.com/")
 	}
