@@ -15,8 +15,7 @@ apt install git
 ### Install Go
 
 ```sh
-echo 'export PATH=$PATH:/usr/local/go/bin' > /etc/profile.d/go.sh
-echo 'export PATH=$PATH:/root/go/bin' > /etc/profile.d/go.sh
+echo 'export PATH=$PATH:/usr/local/go/bin:/root/go/bin' > /etc/profile.d/go.sh
 ```
 
 Log out and log back in to enable to new environment.

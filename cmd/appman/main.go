@@ -32,6 +32,7 @@ func main() {
 }
 
 func addApp(appID string) (string, error) {
+	fmt.Println("Adding app:", appID)
 	path := web.ParsePath(appID)
 	if !(path.First() == "github.com") {
 		return "", fmt.Errorf("appID must start with github.com/")
