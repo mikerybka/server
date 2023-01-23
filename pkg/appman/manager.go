@@ -4,16 +4,16 @@ import (
 	"encoding/json"
 	"net/http"
 	"os"
+	"os/exec"
+	"path/filepath"
 	"strconv"
 	"sync"
 
-	"github.com/library-development/go-golang"
 	"github.com/library-development/go-systemd"
 )
 
 type Manager struct {
 	ConfigFile string
-	GoWorkdir  golang.Workdir
 	NextPort   int
 	configLock sync.Mutex
 	portLock   sync.Mutex
@@ -42,31 +42,23 @@ func (m *Manager) AddApp(w http.ResponseWriter, r *http.Request) {
 		res.Write(w)
 		return
 	}
-	// Pull the latest code for the app.
-	err = m.GoWorkdir.Pull(req.Repo.Owner, req.Repo.Name)
+	// Install the latest version
+	appID := "github.com/" + req.Repo.Owner + "/" + req.Repo.Name + req.Path
+	cmd := exec.Command("go", "install", appID+"@latest")
+	cmd.Env = append(os.Environ(), "GOPROXY=direct")
+	out, err := cmd.CombinedOutput()
 	if err != nil {
-		res.Error = err.Error()
+		res.Error = err.Error() + ": " + string(out)
 		res.Write(w)
 		return
 	}
 	// Find a free port.
 	port := m.findPort()
-	// Build the app and place the binary in a file named after the port.
-	appID := "github.com/" + req.Repo.Owner + "/" + req.Repo.Name
-	bin := "/apps/" + port
-	err = m.GoWorkdir.Build(appID, bin)
-	if err != nil {
-		res.Error = err.Error()
-		res.Write(w)
-		return
-	}
 	// Create a systemd service for the app.
-	err = systemd.AddService("app-"+port, appID, bin+" "+port)
+	err = systemd.AddService("app-"+port, appID+" on port "+port, "/root/go/bin/"+filepath.Base(appID)+" "+port)
 	if err != nil {
 		res.Error = err.Error()
 		res.Write(w)
-		// Clean up the binary and the systemd service.
-		os.Remove(bin)
 		return
 	}
 	// Return the port to the client.

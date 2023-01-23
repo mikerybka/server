@@ -43,6 +43,7 @@ GOPROXY=direct go install github.com/mikerybka/server/cmd/reverseproxy@latest
 Description=appmand
 
 [Service]
+Environment=PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/go/bin:/root/go/bin
 ExecStart=/root/go/bin/appmand
 
 [Install]
