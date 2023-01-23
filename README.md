@@ -1,29 +1,48 @@
 
 ## Setup
 
-```
+```sh
 ssh root@<ip_address>
 ```
 
-```
+### Install Go
+
+```sh
 echo 'export PATH=$PATH:/usr/local/go/bin' > /etc/profile.d/go.sh
 ```
+
 Log out and log back in to enable to new environment.
 
-```
+```sh
 wget https://go.dev/dl/go1.19.5.linux-amd64.tar.gz
 tar -C /usr/local -xzf go1.19.5.linux-amd64.tar.gz
 rm go1.19.5.linux-amd64.tar.gz
 go version
 ```
 
-```
+### Install custom infrastructure
+
+```sh
+go install github.com/mikerybka/server/cmd/appmand@latest
+go install github.com/mikerybka/server/cmd/appman@latest
 go install github.com/mikerybka/server/cmd/reverseproxy@latest
 ```
 
-Copy the following files:
+### Copy the following files:
 
-/etc/systemd/system/reverseproxy.service
+#### /etc/systemd/system/appmand.service
+```
+[Unit]
+Description=appmand
+
+[Service]
+ExecStart=/root/go/bin/appmand
+
+[Install]
+WantedBy=multi-user.target
+```
+
+#### /etc/systemd/system/reverseproxy.service
 ```
 [Unit]
 Description=reverseproxy
@@ -35,14 +54,31 @@ ExecStart=/root/go/bin/reverseproxy
 WantedBy=multi-user.target
 ```
 
-Run these commands:
+### Start services
 
-```
+```sh
 systemctl daemon-reload
+systemctl start appmand
 systemctl start reverseproxy
-systemctl status reverseproxy
 ```
 
 ## Config
 
-Domain to port mapping is done in `/etc/reverseproxy/config.json`.
+### Add an app
+
+```sh
+appman add-app <appID>
+```
+
+- `appID` is the go url of the app. For example, `github.com/mikerybka/server/cmd/reverseproxy`.
+
+On success, a port is returned.
+
+### Set a domain
+
+```sh
+appman set-domain <domain> <port>
+```
+
+- `domain` is a domain to host the app. For example, `brass.dev`.
+- `port` is the port to listen on. For example, `8080`.
