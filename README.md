@@ -5,10 +5,18 @@
 ssh root@<ip_address>
 ```
 
+### Install git
+
+```sh
+apt update
+apt install git
+```
+
 ### Install Go
 
 ```sh
 echo 'export PATH=$PATH:/usr/local/go/bin' > /etc/profile.d/go.sh
+echo 'export PATH=$PATH:/root/go/bin' > /etc/profile.d/go.sh
 ```
 
 Log out and log back in to enable to new environment.
@@ -23,9 +31,9 @@ go version
 ### Install custom infrastructure
 
 ```sh
-go install github.com/mikerybka/server/cmd/appmand@latest
-go install github.com/mikerybka/server/cmd/appman@latest
-go install github.com/mikerybka/server/cmd/reverseproxy@latest
+GOPROXY=direct go install github.com/mikerybka/server/cmd/appmand@latest
+GOPROXY=direct go install github.com/mikerybka/server/cmd/appman@latest
+GOPROXY=direct go install github.com/mikerybka/server/cmd/reverseproxy@latest
 ```
 
 ### Copy the following files:

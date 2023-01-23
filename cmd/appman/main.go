@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/library-development/go-web"
 	"github.com/mikerybka/server/pkg/appman"
 )
 
@@ -31,7 +32,20 @@ func main() {
 }
 
 func addApp(appID string) (string, error) {
-	b, err := json.Marshal(map[string]string{"appID": appID})
+	path := web.ParsePath(appID)
+	if !(path.First() == "github.com") {
+		return "", fmt.Errorf("appID must start with github.com/")
+	}
+	b, err := json.Marshal(appman.AddAppRequest{
+		Repo: struct {
+			Name  string
+			Owner string
+		}{
+			Owner: path[1],
+			Name:  path[2],
+		},
+		Path: path[3:].String(),
+	})
 	if err != nil {
 		panic(err)
 	}
