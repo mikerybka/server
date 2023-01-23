@@ -18,31 +18,18 @@ go version
 ```
 
 ```
-go install github.com/mikerybka/server/cmd/server@latest
-go install github.com/mikerybka/server/cmd/updater@latest
+go install github.com/mikerybka/server/cmd/reverseproxy@latest
 ```
 
 Copy the following files:
 
-/etc/systemd/system/server.service
+/etc/systemd/system/reverseproxy.service
 ```
 [Unit]
-Description=server
+Description=reverseproxy
 
 [Service]
-ExecStart=/root/go/bin/server
-
-[Install]
-WantedBy=multi-user.target
-```
-
-/etc/systemd/system/updater.service
-```
-[Unit]
-Description=updater
-
-[Service]
-ExecStart=/root/go/bin/updater
+ExecStart=/root/go/bin/reverseproxy
 
 [Install]
 WantedBy=multi-user.target
@@ -52,8 +39,10 @@ Run these commands:
 
 ```
 systemctl daemon-reload
-systemctl start server
-systemctl status server
-systemctl start updater
-systemctl status updater
+systemctl start reverseproxy
+systemctl status reverseproxy
 ```
+
+## Config
+
+Domain to port mapping is done in `/etc/reverseproxy/config.json`.
