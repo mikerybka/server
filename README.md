@@ -44,6 +44,7 @@ Description=appmand
 
 [Service]
 Environment=PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/go/bin:/root/go/bin
+Environment=HOME=/root
 ExecStart=/root/go/bin/appmand
 
 [Install]

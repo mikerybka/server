@@ -54,7 +54,7 @@ func (m *Manager) AddApp(w http.ResponseWriter, r *http.Request) {
 	}
 	// Find a free port.
 	port := m.findPort()
-	// Create a systemd service for the app.
+	// Create and start a systemd service for the app.
 	err = systemd.AddService("app-"+port, appID+" on port "+port, "/root/go/bin/"+filepath.Base(appID)+" "+port)
 	if err != nil {
 		res.Error = err.Error()

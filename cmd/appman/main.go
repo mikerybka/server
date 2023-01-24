@@ -66,7 +66,7 @@ func addApp(appID string) (string, error) {
 }
 
 func setDomain(domain string, port string) error {
-	b, err := json.Marshal(map[string]string{"domain": domain, "port": port})
+	b, err := json.Marshal(appman.SetDomainRequest{Domain: domain, Port: port})
 	if err != nil {
 		panic(err)
 	}
