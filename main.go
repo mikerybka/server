@@ -1,7 +1,9 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
+	"io"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -66,10 +68,42 @@ func main() {
 	allowHost := func(host string) bool {
 		return len(strings.Split(host, ".")) <= 4
 	}
+	err = notifyAdmin(upAndRunningMessage())
+	recordError(err)
 	err = util.ServeHTTPS(h, email, certDir, allowHost)
 	if err != nil {
 		fmt.Println(err)
 	}
+}
+
+func upAndRunningMessage() string {
+	msgs := []string{
+		"Up and running!",
+		"Good to go!",
+		"Deployment a success!",
+	}
+	msg, err := util.RandomElement(msgs)
+	if err != nil {
+		panic(err)
+	}
+	return msg
+}
+
+func notifyAdmin(msg string) error {
+	url := fmt.Sprintf("http://%s:2222/alert", constants.BackendIP)
+	req, err := http.NewRequest(http.MethodPost, url, bytes.NewReader([]byte(msg)))
+	if err != nil {
+		panic(err)
+	}
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return err
+	}
+	if res.StatusCode != 200 {
+		b, _ := io.ReadAll(res.Body)
+		return fmt.Errorf("%s: %s", res.Status, b)
+	}
+	return nil
 }
 
 func updateSystem() error {
