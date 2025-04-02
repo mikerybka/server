@@ -78,8 +78,13 @@ func updateSystem() error {
 
 	// Setup workspace
 	fmt.Println("Configuring Go workspace")
+	srcDir := filepath.Join(workdir(), "src")
+	err = os.MkdirAll(srcDir, os.ModePerm)
+	if err != nil {
+		return err
+	}
 	w := &golang.Workspace{
-		Dir: filepath.Join(workdir(), "src"),
+		Dir: srcDir,
 	}
 	err = w.Init()
 	if err != nil {
