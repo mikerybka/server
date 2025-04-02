@@ -16,8 +16,8 @@ import (
 )
 
 func main() {
-	if len(os.Args) > 1 && os.Args[1] == "setup" {
-		err := setup()
+	if len(os.Args) > 2 && os.Args[1] == "setup" {
+		err := setup(os.Args[2])
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
@@ -96,11 +96,11 @@ Environment=SECRET_PASSWORD="%s"
 WantedBy=multi-user.target
 `
 
-func setup() error {
+func setup(password string) error {
 	switch runtime.GOOS {
 	case "linux":
 		if usesSystemd() {
-			return setupSystemd()
+			return setupSystemd(password)
 		} else {
 			return fmt.Errorf("system not supported")
 		}
@@ -109,13 +109,9 @@ func setup() error {
 	}
 }
 
-func setupSystemd() error {
-	password, err := util.GetPasswordFromStdin("Secret password:")
-	if err != nil {
-		return err
-	}
+func setupSystemd(password string) error {
 	b := []byte(fmt.Sprintf(systemdServiceFileTemplate, password))
-	err = os.WriteFile("/etc/systemd/system/server.service", b, os.ModePerm)
+	err := os.WriteFile("/etc/systemd/system/server.service", b, os.ModePerm)
 	if err != nil {
 		return fmt.Errorf("writing systemd unit file: %s", err)
 	}
