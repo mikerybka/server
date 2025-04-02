@@ -150,6 +150,8 @@ func updateSystem() error {
 			if err != nil {
 				return err
 			}
+		} else {
+			fmt.Println("No changes")
 		}
 	}
 
