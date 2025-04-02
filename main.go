@@ -80,10 +80,11 @@ func updateSystem() error {
 		"constants",
 		"brass",
 		"english",
+		"git",
+		"golang",
 	}
 	binaries := []string{
-		"backend",
-		"database",
+		"server",
 	}
 	rebuild := false
 	for _, lib := range libraries {
@@ -120,11 +121,19 @@ func updateSystem() error {
 		}
 	}
 
+	if rebuild {
+		cmd = exec.Command("reboot")
+		out, err = cmd.CombinedOutput()
+		if err != nil {
+			return fmt.Errorf("reboot: %s", out)
+		}
+	}
+
 	return nil
 }
 
 func binPath(bin string) string {
-	return filepath.Join(workdir(), "bin", bin)
+	return filepath.Join("/bin", bin)
 }
 
 func build(bin string) error {
