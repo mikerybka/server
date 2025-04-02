@@ -63,7 +63,7 @@ func updateSystem() error {
 	}
 
 	// Update Go
-	err = golang.InstallOrUpdateGo()
+	rebuild, err := golang.InstallOrUpdateGo()
 	if err != nil {
 		return err
 	}
@@ -82,11 +82,11 @@ func updateSystem() error {
 		"english",
 		"git",
 		"golang",
+		"secretdb",
 	}
 	binaries := []string{
 		"server",
 	}
-	rebuild := false
 	for _, lib := range libraries {
 		pkg := fmt.Sprintf("github.com/mikerybka/%s", lib)
 		dir := filepath.Join(w.Dir, pkg)
