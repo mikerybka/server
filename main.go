@@ -81,7 +81,10 @@ func updateSystem() error {
 	w := &golang.Workspace{
 		Dir: filepath.Join(workdir(), "src"),
 	}
-	w.Init()
+	err = w.Init()
+	if err != nil {
+		return err
+	}
 
 	// Update binaries
 	libraries := []string{
