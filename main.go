@@ -200,6 +200,7 @@ Type=simple
 ExecStart=/bin/server
 Environment=PATH="/usr/local/go/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin"
 Environment=GOMODCACHE="/root/.local/share/server/go/mod"
+Environment=GOCACHE="/root/.local/share/server/go/cache"
 
 [Install]
 WantedBy=multi-user.target
