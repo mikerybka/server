@@ -11,6 +11,8 @@ import (
 	"strings"
 
 	"github.com/mikerybka/constants"
+	"github.com/mikerybka/git"
+	"github.com/mikerybka/golang"
 	"github.com/mikerybka/secretdb"
 	"github.com/mikerybka/util"
 )
@@ -32,14 +34,14 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	handler := httputil.NewSingleHostReverseProxy(backendURL)
+	h := httputil.NewSingleHostReverseProxy(backendURL)
 	certDir := filepath.Join(workdir(), "certs")
 	secrets := secretdb.NewClient(constants.BackendIP, "mike", "1212")
 	email, _ := secrets.Email()
 	allowHost := func(host string) bool {
 		return len(strings.Split(host, ".")) <= 4
 	}
-	err = util.ServeHTTPS(handler, email, certDir, allowHost)
+	err = util.ServeHTTPS(h, email, certDir, allowHost)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -61,12 +63,76 @@ func updateSystem() error {
 	}
 
 	// Update Go
-	//TODO
+	err = golang.InstallOrUpdateGo()
+	if err != nil {
+		return err
+	}
+
+	// Setup workspace
+	w := &golang.Workspace{
+		Dir: filepath.Join(workdir(), "src"),
+	}
+	w.Init()
 
 	// Update binaries
-	//TODO
+	libraries := []string{
+		"util",
+		"constants",
+		"brass",
+		"english",
+	}
+	binaries := []string{
+		"backend",
+		"database",
+	}
+	rebuild := false
+	for _, lib := range libraries {
+		pkg := fmt.Sprintf("github.com/mikerybka/%s", lib)
+		dir := filepath.Join(w.Dir, pkg)
+		url, err := golang.PkgGitURL(pkg)
+		if err != nil {
+			panic(err)
+		}
+		changed, err := git.CloneOrPull(dir, url)
+		if err != nil {
+			return err
+		}
+		if changed {
+			rebuild = true
+		}
+	}
+	for _, bin := range binaries {
+		pkg := fmt.Sprintf("github.com/mikerybka/%s", bin)
+		dir := filepath.Join(w.Dir, pkg)
+		url, err := golang.PkgGitURL(pkg)
+		if err != nil {
+			panic(err)
+		}
+		changed, err := git.CloneOrPull(dir, url)
+		if err != nil {
+			return err
+		}
+		if changed || rebuild {
+			err = build(bin)
+			if err != nil {
+				return err
+			}
+		}
+	}
 
 	return nil
+}
+
+func binPath(bin string) string {
+	return filepath.Join(workdir(), "bin", bin)
+}
+
+func build(bin string) error {
+	workspace := &golang.Workspace{
+		Dir: filepath.Join(workdir(), "src"),
+	}
+	pkg := fmt.Sprintf("github.com/mikerybka/%s", bin)
+	return workspace.Build(pkg, binPath(bin))
 }
 
 func workdir() string {
