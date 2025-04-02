@@ -111,6 +111,12 @@ func updateSystem() error {
 		if changed {
 			rebuild = true
 		}
+		cmd = exec.Command("go", "work", "use", ".")
+		cmd.Dir = dir
+		out, err := cmd.CombinedOutput()
+		if err != nil {
+			return fmt.Errorf("%s: %s", cmd, out)
+		}
 	}
 	for _, bin := range binaries {
 		pkg := fmt.Sprintf("github.com/mikerybka/%s", bin)
@@ -123,6 +129,12 @@ func updateSystem() error {
 		changed, err := git.CloneOrPull(dir, url)
 		if err != nil {
 			return err
+		}
+		cmd = exec.Command("go", "work", "use", ".")
+		cmd.Dir = dir
+		out, err := cmd.CombinedOutput()
+		if err != nil {
+			return fmt.Errorf("%s: %s", cmd, out)
 		}
 		if changed || rebuild {
 			fmt.Println("Building", bin)
