@@ -16,8 +16,8 @@ import (
 )
 
 func main() {
-	if len(os.Args) > 2 && os.Args[1] == "setup" {
-		err := setup(os.Args[2])
+	if len(os.Args) > 1 && os.Args[1] == "setup" {
+		err := setup()
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
@@ -34,7 +34,7 @@ func main() {
 	}
 	handler := httputil.NewSingleHostReverseProxy(backendURL)
 	certDir := filepath.Join(workdir(), "certs")
-	secrets := secretdb.NewClient(constants.BackendIP, "mike", util.RequireEnvVar("SECRET_PASSWORD"))
+	secrets := secretdb.NewClient(constants.BackendIP, "mike", "1212")
 	email, _ := secrets.Email()
 	allowHost := func(host string) bool {
 		return len(strings.Split(host, ".")) <= 4
@@ -83,24 +83,23 @@ func recordError(err error) {
 	}
 }
 
-var systemdServiceFileTemplate = `[Unit]
+var systemdServiceFile = []byte(`[Unit]
 Description=Server
 After=network.target
 
 [Service]
 Type=simple
 ExecStart=/bin/server
-Environment=SECRET_PASSWORD="%s"
 
 [Install]
 WantedBy=multi-user.target
-`
+`)
 
-func setup(password string) error {
+func setup() error {
 	switch runtime.GOOS {
 	case "linux":
 		if usesSystemd() {
-			return setupSystemd(password)
+			return setupSystemd()
 		} else {
 			return fmt.Errorf("system not supported")
 		}
@@ -109,9 +108,8 @@ func setup(password string) error {
 	}
 }
 
-func setupSystemd(password string) error {
-	b := []byte(fmt.Sprintf(systemdServiceFileTemplate, password))
-	err := os.WriteFile("/etc/systemd/system/server.service", b, os.ModePerm)
+func setupSystemd() error {
+	err := os.WriteFile("/etc/systemd/system/server.service", systemdServiceFile, os.ModePerm)
 	if err != nil {
 		return fmt.Errorf("writing systemd unit file: %s", err)
 	}
