@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"net/http"
 	"net/http/httputil"
 	"net/url"
 	"os"
@@ -9,6 +10,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+	"time"
 
 	"github.com/mikerybka/constants"
 	"github.com/mikerybka/git"
@@ -17,7 +19,10 @@ import (
 	"github.com/mikerybka/util"
 )
 
+var reboot = false
+
 func main() {
+	// Handle `server setup` command
 	if len(os.Args) > 1 && os.Args[1] == "setup" {
 		err := setup()
 		if err != nil {
@@ -27,14 +32,29 @@ func main() {
 		return
 	}
 
+	// Full system update (may restart)
 	recordError(updateSystem())
+
+	// Reboot at midnight
+	go func() {
+		util.WaitUntil(0, 0, 0)
+		reboot = true
+		time.Sleep(10 * time.Second) // wait for any requests to finish
+		cmd := exec.Command("reboot")
+		cmd.Run()
+	}()
 
 	// Run system
 	backendURL, err := url.Parse(fmt.Sprintf("http://%s:3000", constants.BackendIP))
 	if err != nil {
 		panic(err)
 	}
-	h := httputil.NewSingleHostReverseProxy(backendURL)
+	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if reboot {
+			return
+		}
+		httputil.NewSingleHostReverseProxy(backendURL).ServeHTTP(w, r)
+	})
 	certDir := filepath.Join(workdir(), "certs")
 	err = os.MkdirAll(certDir, os.ModePerm)
 	if err != nil {
