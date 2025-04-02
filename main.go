@@ -36,6 +36,11 @@ func main() {
 	}
 	h := httputil.NewSingleHostReverseProxy(backendURL)
 	certDir := filepath.Join(workdir(), "certs")
+	err = os.MkdirAll(certDir, os.ModePerm)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 	secrets := secretdb.NewClient(constants.BackendIP, "mike", "1212")
 	email, _ := secrets.Email()
 	allowHost := func(host string) bool {
