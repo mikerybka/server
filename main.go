@@ -54,6 +54,7 @@ func main() {
 
 func updateSystem() error {
 	// Run: apt update
+	fmt.Println("Updating package lists")
 	cmd := exec.Command("apt", "update")
 	out, err := cmd.CombinedOutput()
 	if err != nil {
@@ -61,6 +62,7 @@ func updateSystem() error {
 	}
 
 	// Run: apt upgrade -y
+	fmt.Println("Upgrading packages")
 	cmd = exec.Command("apt", "upgrade", "-y")
 	out, err = cmd.CombinedOutput()
 	if err != nil {
@@ -68,12 +70,14 @@ func updateSystem() error {
 	}
 
 	// Update Go
+	fmt.Println("Updating Go")
 	rebuild, err := golang.InstallOrUpdateGo()
 	if err != nil {
 		return err
 	}
 
 	// Setup workspace
+	fmt.Println("Configuring Go workspace")
 	w := &golang.Workspace{
 		Dir: filepath.Join(workdir(), "src"),
 	}
@@ -94,6 +98,7 @@ func updateSystem() error {
 	}
 	for _, lib := range libraries {
 		pkg := fmt.Sprintf("github.com/mikerybka/%s", lib)
+		fmt.Println("Updating", pkg)
 		dir := filepath.Join(w.Dir, pkg)
 		url, err := golang.PkgGitURL(pkg)
 		if err != nil {
@@ -109,6 +114,7 @@ func updateSystem() error {
 	}
 	for _, bin := range binaries {
 		pkg := fmt.Sprintf("github.com/mikerybka/%s", bin)
+		fmt.Println("Updating", pkg)
 		dir := filepath.Join(w.Dir, pkg)
 		url, err := golang.PkgGitURL(pkg)
 		if err != nil {
@@ -119,6 +125,7 @@ func updateSystem() error {
 			return err
 		}
 		if changed || rebuild {
+			fmt.Println("Building", bin)
 			err = build(bin)
 			if err != nil {
 				return err
@@ -127,6 +134,7 @@ func updateSystem() error {
 	}
 
 	if rebuild {
+		fmt.Println("Rebooting")
 		cmd = exec.Command("reboot")
 		out, err = cmd.CombinedOutput()
 		if err != nil {
