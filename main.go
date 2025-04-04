@@ -47,7 +47,7 @@ func main() {
 	}()
 
 	// Run system
-	backendURL, err := url.Parse(fmt.Sprintf("http://%s:3000", constants.BackendIP))
+	backendURL, err := url.Parse(fmt.Sprintf("http://%s:3333", constants.BackendIP))
 	if err != nil {
 		panic(err)
 	}
