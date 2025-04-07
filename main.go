@@ -63,7 +63,7 @@ func main() {
 		fmt.Println(err)
 		return
 	}
-	secrets := secretdb.NewClient(constants.BackendIP, "mike", "1212")
+	secrets := secretdb.NewClient()
 	email, _ := secrets.Email()
 	allowHost := func(host string) bool {
 		return len(strings.Split(host, ".")) <= 4
@@ -81,6 +81,10 @@ func upAndRunningMessage() string {
 		"Up and running!",
 		"Good to go!",
 		"Deployment a success!",
+		"Another good one!",
+		"Boom!",
+		"Bam!",
+		"Skiddy bop!",
 	}
 	msg, err := util.RandomElement(msgs)
 	if err != nil {
