@@ -47,7 +47,8 @@ func main() {
 	}()
 
 	// Run system
-	backendURL, err := url.Parse(fmt.Sprintf("http://%s:3333", constants.BackendIP))
+	backendRawURL := fmt.Sprintf("http://%s:3333", constants.BackendIP)
+	backendURL, err := url.Parse(backendRawURL)
 	if err != nil {
 		panic(err)
 	}
@@ -55,7 +56,23 @@ func main() {
 		if reboot {
 			return
 		}
-		httputil.NewSingleHostReverseProxy(backendURL).ServeHTTP(w, r)
+		mux := http.NewServeMux()
+		mux.HandleFunc("GET /live.mp3", util.NewStreamBroadcaster(func() (io.ReadCloser, error) {
+			req, err := http.NewRequest("GET", backendRawURL+"/live.mp3", nil)
+			if err != nil {
+				return nil, err
+			}
+			res, err := http.DefaultClient.Do(req)
+			if err != nil {
+				return nil, err
+			}
+			if res.StatusCode != 200 {
+				return nil, fmt.Errorf("%s", res.Status)
+			}
+			return res.Body, nil
+		}).HTTPHandler("audio/mpeg"))
+		mux.Handle("/", httputil.NewSingleHostReverseProxy(backendURL))
+		mux.ServeHTTP(w, r)
 	})
 	certDir := filepath.Join(workdir(), "certs")
 	err = os.MkdirAll(certDir, os.ModePerm)
