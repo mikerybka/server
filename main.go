@@ -50,8 +50,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	secrets := secretdb.NewClient("100.115.153.54")
-
+	secrets := secretdb.NewClient("http://100.115.153.54:2222/secrets")
 	radioPassword := util.Must(secrets.Read("radio.mikerybka.com/password"))
 	broadcaster := util.NewStreamBroadcaster(func() (io.ReadCloser, error) {
 		req, err := http.NewRequest("GET", "http://100.115.153.54:3333/live.mp3", nil)
