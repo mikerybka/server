@@ -47,30 +47,38 @@ func main() {
 	}()
 
 	// Run system
-	backendRawURL := fmt.Sprintf("http://%s:3333", constants.BackendIP)
-	backendURL, err := url.Parse(backendRawURL)
+	backendURL, err := url.Parse("http://100.115.153.54:3333")
 	if err != nil {
 		panic(err)
 	}
+	secrets := secretdb.NewClient("100.115.153.54")
+
+	radioPassword := util.Must(secrets.Read("radio.mikerybka.com/password"))
+	broadcaster := util.NewStreamBroadcaster(func() (io.ReadCloser, error) {
+		req, err := http.NewRequest("GET", "http://100.115.153.54:3333/live.mp3", nil)
+		if err != nil {
+			return nil, err
+		}
+		res, err := http.DefaultClient.Do(req)
+		if err != nil {
+			return nil, err
+		}
+		if res.StatusCode != 200 {
+			return nil, fmt.Errorf("%s", res.Status)
+		}
+		return res.Body, nil
+	}).HTTPHandler("audio/mpeg")
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if reboot {
 			return
 		}
 		mux := http.NewServeMux()
-		mux.HandleFunc("GET /live.mp3", util.NewStreamBroadcaster(func() (io.ReadCloser, error) {
-			req, err := http.NewRequest("GET", backendRawURL+"/live.mp3", nil)
-			if err != nil {
-				return nil, err
-			}
-			res, err := http.DefaultClient.Do(req)
-			if err != nil {
-				return nil, err
-			}
-			if res.StatusCode != 200 {
-				return nil, fmt.Errorf("%s", res.Status)
-			}
-			return res.Body, nil
-		}).HTTPHandler("audio/mpeg"))
+		mux.HandleFunc("mikerybka.com/{$}", func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Add("Content-Type", "text/html")
+			w.Write([]byte(`<pre><a href="https://radio.mikerybka.com">Radio</a>
+	</pre>`))
+		})
+		mux.Handle("GET /live.mp3", util.PasswordProtected(radioPassword, http.HandlerFunc(broadcaster)))
 		mux.Handle("/", httputil.NewSingleHostReverseProxy(backendURL))
 		mux.ServeHTTP(w, r)
 	})
@@ -80,8 +88,7 @@ func main() {
 		fmt.Println(err)
 		return
 	}
-	secrets := secretdb.NewClient()
-	email, _ := secrets.Email()
+	email, _ := secrets.Read("email")
 	allowHost := func(host string) bool {
 		return len(strings.Split(host, ".")) <= 4
 	}
