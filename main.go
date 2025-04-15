@@ -14,7 +14,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/mikerybka/constants"
 	"github.com/mikerybka/git"
 	"github.com/mikerybka/golang"
 	"github.com/mikerybka/secretdb"
@@ -118,8 +117,7 @@ func upAndRunningMessage() string {
 }
 
 func notifyAdmin(msg string) error {
-	url := fmt.Sprintf("http://%s:2222/alert", constants.BackendIP)
-	req, err := http.NewRequest(http.MethodPost, url, bytes.NewReader([]byte(msg)))
+	req, err := http.NewRequest(http.MethodPost, "http://100.115.153.54:2222/alert", bytes.NewReader([]byte(msg)))
 	if err != nil {
 		panic(err)
 	}
@@ -176,7 +174,6 @@ func updateSystem() error {
 	// Update binaries
 	libraries := []string{
 		"util",
-		"constants",
 		"brass",
 		"english",
 		"git",
