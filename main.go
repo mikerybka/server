@@ -41,7 +41,7 @@ func main() {
 		util.WaitUntil(0, 0, 0)
 		reboot = true
 		time.Sleep(10 * time.Second) // wait for any requests to finish
-		cmd := exec.Command("reboot")
+		cmd := exec.Command("reboot", "now")
 		cmd.Run()
 	}()
 
